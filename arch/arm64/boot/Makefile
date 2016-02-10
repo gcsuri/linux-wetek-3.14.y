@@ -16,7 +16,7 @@
 
 include $(srctree)/arch/arm64/boot/dts/Makefile
 
-targets := Image Image.gz Image.lzo
+targets := Image Image.gz Image.lzo uImage-dtb
 
 DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES))
 ifneq ($(DTB_NAMES),)
@@ -33,6 +33,9 @@ $(obj)/Image.gz: $(obj)/Image FORCE
 	$(call if_changed,gzip)
 
 $(obj)/Image.lzo: $(obj)/Image FORCE
+	$(call if_changed,lzo)
+
+$(obj)/uImage-dtb: $(obj)/Image FORCE
 	$(call if_changed,lzo)
 
 $(obj)/Image.gz-dtb: $(obj)/Image.gz $(DTB_OBJS) FORCE
