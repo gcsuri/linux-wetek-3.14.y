@@ -503,6 +503,58 @@ static struct platform_driver wetekcard_driver = {
 	}
 };
 #endif
+#ifdef CONFIG_ARM64
+#include <linux/of.h>
+#include <linux/of_fdt.h>
+#include <linux/of_reserved_mem.h>
+#include <linux/uaccess.h>
+#include <linux/dma-mapping.h>
+static phys_addr_t wetek_rmem_paddr;
+static void __iomem *wetek_rmem_vaddr = NULL;
+static u32 wetek_rmem_size;
+EXPORT_SYMBOL(wetek_rmem_size);
+EXPORT_SYMBOL(wetek_rmem_vaddr);
+EXPORT_SYMBOL(wetek_rmem_paddr);
+int rmem_init(struct device *dev)
+{
+	return of_reserved_mem_device_init(dev);
+}
+EXPORT_SYMBOL(rmem_init);
+static int rmem_wetek_device_init(struct reserved_mem *rmem, struct device *dev)
+{
+
+	if ((wetek_rmem_paddr > 0) && (wetek_rmem_size > 0)) {
+		wetek_rmem_vaddr = ioremap_wc(wetek_rmem_paddr, wetek_rmem_size);
+		if (!wetek_rmem_vaddr)
+			printk(KERN_INFO "wetek_memory ioremap error\n");
+	}	
+	return 0;
+}
+
+static const struct reserved_mem_ops rmem_wetek_ops = {
+	.device_init = rmem_wetek_device_init,
+};
+
+static int __init rmem_wetek_setup(struct reserved_mem *rmem)
+{
+	phys_addr_t align = PAGE_SIZE;
+	phys_addr_t mask = align - 1;
+	if ((rmem->base & mask) || (rmem->size & mask)) {
+		printk(KERN_INFO "Reserved memory: incorrect alignment of region\n");
+		return -EINVAL;
+	}
+	wetek_rmem_paddr = rmem->base;
+	wetek_rmem_size = rmem->size;
+	rmem->ops = &rmem_wetek_ops;
+	printk(KERN_INFO "Reserved memory wetek: created at 0x%p, size %ld MiB\n",
+		     (void *)wetek_rmem_paddr, (unsigned long)wetek_rmem_size / ( 1024 * 1024));
+	return 0;
+}
+RESERVEDMEM_OF_DECLARE(wetekplay, "amlogic, wetek-memory", rmem_wetek_setup);
+
+
+
+#endif
 int AddWetekFB(struct platform_driver *drv)
 {
 	return platform_driver_register(drv);
