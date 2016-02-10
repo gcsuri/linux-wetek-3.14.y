@@ -55,7 +55,7 @@
 		};
 		fb_reserved:linux,meson-fb {
 			compatible = "amlogic, fb-memory";
-			size = <0x0 0x2000000>;
+			size = <0x0 0x4480000>;
 			no-map;
 		};
 
@@ -138,7 +138,7 @@
 		interrupts = <0 3 1
 			0 89 1>;
 		interrupt-names = "viu-vsync", "rdma";
-		mem_size = <0x01800000 0x00800000>; /* fb0/fb1 memory size */
+		mem_size = <0x04380000 0x00100000>; /* fb0/fb1 memory size */
 		vmode = <3>; /** 0:VMODE_720P 1:VMODE_LCD 2:VMODE_LVDS_1080P 3:VMODE_1080P */
 		scale_mode = <1>; /** 0:VPU free scale 1:OSD free scale 2:OSD super scale */
 		display_size_default = <1920 1080 1920 3240 32>; //1920*1080*4*3 = 0x17BB000
@@ -377,12 +377,13 @@
 		pinctrl-names = "wifi_32k_pins";
 		pinctrl-0 = <&wifi_32k_pins>;
 	};
-	wifi_power{
-		compatible = "amlogic, wifi_power";
-		dev_name = "wifi_power";
-		status = "okay";
-		power_gpio =  <&gpio       GPIOX_6       GPIO_ACTIVE_HIGH>;
-	};
+       wifi_power{
+               compatible = "amlogic, wifi_power";
+               dev_name = "wifi_power";
+               status = "okay";
+               power_gpio =  <&gpio       GPIOX_6       GPIO_ACTIVE_HIGH>;
+       };
+
     sd{
         compatible = "amlogic, aml_sd_emmc";
         dev_name = "aml_newsd.0";
@@ -810,14 +811,14 @@
 		pl-periph-id = <0>; /** lm name */
 		clock-src = "usb0"; /** clock src */
 		port-id = <0>;  /** ref to mach/usb.h */
-		port-type = <0>;	/** 0: otg, 1: host, 2: slave */
+		port-type = <1>;	/** 0: otg, 1: host, 2: slave */
 		port-speed = <0>; /** 0: default, high, 1: full */
 		port-config = <0>; /** 0: default */
 		port-dma = <0>; /** 0: default, 1: single, 2: incr, 3: incr4, 4: incr8, 5: incr16, 6: disable*/
-		port-id-mode = <0>; /** 0: hardware, 1: sw_host, 2: sw_slave*/
-		gpio-vbus-power = "GPIODV_24";
-		gpios = <&gpio       GPIODV_24       GPIO_ACTIVE_HIGH>;
-		gpio-work-mask	= <1>; /**0: work on pulldown,1:work on pullup*/
+		port-id-mode = <1>; /** 0: hardware, 1: sw_host, 2: sw_slave*/
+		/*gpio-vbus-power = "GPIODV_24";*/
+		/*gpios = <&gpio       GPIODV_24       GPIO_ACTIVE_HIGH>;*/
+		//gpio-work-mask	= <1>; /**0: work on pulldown,1:work on pullup*/
 		phy-reg = <0xc0000000>;
 		phy-reg-size = <0x20>;
 		usb-fifo = <1024>;
@@ -992,10 +993,13 @@
 		led_active_low = <1>;
 	};
 
-/*
+
 	dvb {
-		compatible = "amlogic, dvb";
-		dev_name = "dvb";
+		compatible = "amlogic,dvb";
+		dev_name = "wetek-dvb";
+		status = "okay";
+		fec_reset_gpio-gpios = <&gpio GPIOY_13 GPIO_ACTIVE_HIGH>;
+		power_ctrl_gpio-gpios = <&gpio GPIOY_15 GPIO_ACTIVE_LOW>;		
 		//"parallel","serial","disable"
 		ts0 = "parallel";
 		ts0_control = <0>;
@@ -1009,29 +1013,25 @@
 				&clock GCLK_IDX_HIU_PARSER_TOP>;
 		reset-names = "demux", "asyncfifo", "ahbarb0", "uparsertop";
 	};
-	dvbfe {
+/*	dvbfe {
 		compatible = "amlogic, dvbfe";
 		dev_name = "dvbfe";
-		dtv_demod0 = "Mxl241";
-		dtv_demod0_i2c_adap_id = <2>;
+		dtv_demod0 = "cxd2837";
+		dtv_demod0_i2c_adap_id = <1>;
 		dtv_demod0_i2c_addr = <0x60>;
 		dtv_demod0_reset_value = <0>;
-		dtv_demod0_reset_gpio-gpios = <&gpio GPIOY_12 GPIO_ACTIVE_HIGH>;
+		dtv_demod0_reset_gpio-gpios = <&gpio GPIOY_13 GPIO_ACTIVE_HIGH>;
 		fe0_dtv_demod = <0>;
 		fe0_ts = <0>;
 		fe0_dev = <0>;
-	};
-*/
+	};*/
 };
 &i2c_a {
-  status = "disabled";
-  /*p200: multiplex with usb PWR, disbaled*/
-};
-/*
-&i2c_b {
   status = "okay";
 };
-*/
+/*&i2c_b {
+  status = "okay";
+};*/
 
 &pinmux {
 	audio_pins:audio_pin{
@@ -1041,9 +1041,9 @@
 	};
 
 	audio_spdif_pins:audio_pin1{
-		amlogic,setmask=<AO 0x10000>;	/*spdif_out*/
-		amlogic,clrmask=<AO 0x40000>;	/*spdif_out*/
-		amlogic,pins ="GPIOAO_6";		/*spdif_out*/
+		amlogic,setmask=<1 0x200>;	/*spdif_out*/
+		amlogic,clrmask=<1 0x10000>;	/*spdif_out*/
+		amlogic,pins ="GPIOY_12";		/*spdif_out*/
 	};
 
 	audio_btpcm_pins:audio_btpcm_pins{
