@@ -58,6 +58,11 @@
 			size = <0x0 0x4480000>;
 			no-map;
 		};
+		wetekplay_reserved:linux,wetekfb {
+			compatible = "amlogic, wetek-memory";
+			size = <0x0 0x2000000>;
+			no-map;
+		};
 
 		di_reserved:linux,di {
 			compatible = "amlogic, di-mem";
@@ -128,6 +133,12 @@
 	meson-vout {
 		compatible = "amlogic, meson-vout";
 		dev_name = "meson-vout";
+		status = "okay";
+	};
+	wetekfb {
+		compatible = "amlogic,wetekfb";
+		memory-region = <&wetekplay_reserved>;
+		dev_name = "wetekfb";
 		status = "okay";
 	};
 	meson-fb {
