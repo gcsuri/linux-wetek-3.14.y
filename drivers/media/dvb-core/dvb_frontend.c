@@ -2536,6 +2536,17 @@ static int dvb_frontend_release(struct inode *inode, struct file *file)
 	return ret;
 }
 
+#ifdef CONFIG_COMPAT
+static long dvb_frontend_compat_ioctl(struct file *filp,
+			unsigned int cmd, unsigned long args)
+{
+	unsigned long ret;
+
+	args = (unsigned long)compat_ptr(args);
+	ret = dvb_generic_ioctl(filp, cmd, args);
+	return ret;
+}
+#endif
 static const struct file_operations dvb_frontend_fops = {
 	.owner		= THIS_MODULE,
 	.unlocked_ioctl	= dvb_generic_ioctl,
@@ -2543,6 +2554,9 @@ static const struct file_operations dvb_frontend_fops = {
 	.open		= dvb_frontend_open,
 	.release	= dvb_frontend_release,
 	.llseek		= noop_llseek,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl	= dvb_frontend_compat_ioctl,
+#endif
 };
 
 int dvb_frontend_suspend(struct dvb_frontend *fe)
