@@ -405,6 +405,7 @@ struct stream_buf_s *get_buf_by_type(u32 type)
 
 	return NULL;
 }
+EXPORT_SYMBOL(get_buf_by_type);
 
 void set_sample_rate_info(int arg)
 {
