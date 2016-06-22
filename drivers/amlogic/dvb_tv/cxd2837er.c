@@ -1761,6 +1761,7 @@ static struct  dvb_frontend_ops cxd2837er_ops = {
 		.frequency_max = 1002000000
 	},
 	.init = cxd2837er_init_tc,
+	.read_ber = cxd2837er_read_ber,
 	.sleep = cxd2837er_sleep_tc,
 	.release = cxd2837er_release,
 	.set_frontend = cxd2837er_set_frontend_tc,
