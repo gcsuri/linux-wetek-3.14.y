@@ -57,6 +57,10 @@
 #define ALSA_TRACE()
 #endif
 
+extern int output_volume; //Volume control
+extern struct mutex m_volume; //Volume mutex
+#define VOL_CTL(s) ((unsigned int)(((signed short)(s))*(vol)) >> 15) //Volume scaling from 0~100
+
 unsigned long aml_i2s_playback_start_addr = 0;
 EXPORT_SYMBOL(aml_i2s_playback_start_addr);
 
@@ -597,6 +601,7 @@ static int aml_i2s_copy_playback(struct snd_pcm_runtime *runtime, int channel,
 	struct aml_audio_buffer *tmp_buf = buffer->private_data;
 	void *ubuf = tmp_buf->buffer_start;
 	struct audio_stream *s = &prtd->s;
+	unsigned int vol;
 
 	if (s->device_type == AML_AUDIO_I2SOUT)
 		aml_i2s_alsa_write_addr = frames_to_bytes(runtime, pos);
@@ -623,11 +628,14 @@ static int aml_i2s_copy_playback(struct snd_pcm_runtime *runtime, int channel,
 				pr_info("audio data unligned: pos=%d, n=%d, align=%d\n",
 				     (int)pos, n, align);
 			}
+			mutex_lock(&m_volume);
+            vol = (output_volume * 0x8000) / 100;
+			mutex_unlock(&m_volume);
 
 			for (j = 0; j < n; j += 64) {
 				for (i = 0; i < 16; i++) {
-					*left++ = (*tfrom++);
-					*right++ = (*tfrom++);
+					*left++ = (int16_t)(VOL_CTL(*tfrom++));
+					*right++ = (int16_t)(VOL_CTL(*tfrom++));
 				}
 				left += 16;
 				right += 16;
