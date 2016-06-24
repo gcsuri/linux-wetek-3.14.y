@@ -908,6 +908,14 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 		}
 	}
 
+	/* put cmdline at the end */
+#ifdef CONFIG_CMDLINE
+#if defined(CONFIG_CMDLINE_EXTEND)
+	strlcat(data, " ", COMMAND_LINE_SIZE);
+	strlcat(data, config_cmdline, COMMAND_LINE_SIZE);
+#endif
+#endif 
+
 	pr_debug("Command line is: %s\n", (char*)data);
 
 	/* break now */
