@@ -1036,6 +1036,18 @@
 		fe0_ts = <0>;
 		fe0_dev = <0>;
 	};*/
+	leds{
+		compatible = "amlogic,wetekplay-led";
+		powerled{
+		label = "wetek:blue:powerled";
+		};
+		wifiled{
+		label = "wetek:blue:wifiled";
+		};
+		ethled{
+		label = "wetek:blue:ethled";
+		};
+	};
 };
 &i2c_a {
   status = "okay";
