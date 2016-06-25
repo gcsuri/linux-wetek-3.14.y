@@ -10,9 +10,11 @@
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/amlogic/aml_gpio_consumer.h>
+#include <linux/amlogic/gpio-amlogic.h>
+#include <linux/amlogic/sd.h>
+#include <linux/amlogic/iomap.h>
+#include <dt-bindings/gpio/gxbb.h>
 
-#include <mach/am_regs.h>
-#include <plat/regops.h>
 
 #define GPIO_OWNER_WIFILED "WIFILED"
 #define GPIO_OWNER_ETHLED "ETHLED"
@@ -193,15 +195,11 @@ static int wetekplay_led_remove(struct platform_device *pdev)
 	return 0;
 }
 
-#ifdef CONFIG_USE_OF
 static const struct of_device_id amlogic_wetekplayled_dt_match[]={
 	{	.compatible = "amlogic,wetekplay-led",
 	},
 	{},
 };
-#else
-#define amlogic_wetekplayled_dt_match, NULL
-#endif
 
 
 static struct platform_driver wetekplay_led_driver = {
