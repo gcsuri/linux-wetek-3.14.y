@@ -1793,10 +1793,11 @@ static void vh264_isr(void)
 			   ltemp); */
 			pr_info("0x%x\n", *daddr);
 		}
-#endif
+
 		pr_info("pocinfo 0x%x, top poc %d, wp 0x%x, length %d\n",
 			   READ_VREG(AV_SCRATCH_L), READ_VREG(AV_SCRATCH_M),
 			   sei_itu35_wp, sei_itu35_data_length);
+#endif
 		user_data_poc.poc_info = READ_VREG(AV_SCRATCH_L);
 		user_data_poc.poc_number = READ_VREG(AV_SCRATCH_M);
 		set_userdata_poc(user_data_poc);
