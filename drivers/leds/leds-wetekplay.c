@@ -18,122 +18,55 @@
 
 #define GPIO_OWNER_WIFILED "WIFILED"
 #define GPIO_OWNER_ETHLED "ETHLED"
+#define GPIO_OWNER_PWRLED "PWRLED"
+
+int wifiLedGpio = -1;
+int ethLedGpio = -1;
+int pwrLedGpio = -1;
 
 static void wetekplay_powerled_set(struct led_classdev *cdev,
 			  enum led_brightness brightness)
 {
 
-#if 0
-	if (brightness) {
-		//printk(KERN_INFO "%s() LED BLUE\n", __FUNCTION__);
-		aml_set_reg32_bits(SECBUS2_REG_ADDR(0), 1, 0, 1);	// set TEST_n output mode
-		aml_set_reg32_bits(AOBUS_REG_ADDR(0x24), 1, 31, 1);  // set TEST_n pin H
-	}
-	else {
-		//printk(KERN_INFO "%s() LED RED\n", __FUNCTION__);
-		aml_set_reg32_bits(SECBUS2_REG_ADDR(0), 1, 0, 1);	// set TEST_n output mode
-		aml_set_reg32_bits(AOBUS_REG_ADDR(0x24), 0, 31, 1);  // set TEST_n pin L
-	}
-#endif
+	if (pwrLedGpio > 0)
+		gpio_direction_output(pwrLedGpio, brightness > 0 ? 1 : 0);
 }
 
 static enum led_brightness wetekplay_powerled_get(struct led_classdev *cdev)
 {
-#if 0
-	if (aml_get_reg32_bits(AOBUS_REG_ADDR(0x24), 31, 1))
+	if (gpio_get_value(pwrLedGpio))
 	    return 255;
 	else
-#endif
 	    return 0;
 }
 
 static void wetekplay_wifiled_set(struct led_classdev *cdev,
 			  enum led_brightness brightness)
 {
-#if 0
-	int pin;
-#ifdef CONFIG_ARCH_MESON6
-	pin = GPIOC_8;
-#else
-	pin = GPIOAO_10;
-#endif
-	if (brightness) {
-		//printk(KERN_INFO "%s() LED BLUE\n", __FUNCTION__);
-#ifdef CONFIG_ARCH_MESON6			
-		amlogic_gpio_direction_output(pin, 1, GPIO_OWNER_WIFILED);
-#else
-		amlogic_set_pull_up_down(pin, 1, GPIO_OWNER_ETHLED);
-#endif		
-	}
-	else {
-		//printk(KERN_INFO "%s() LED OFF\n", __FUNCTION__);
-#ifdef CONFIG_ARCH_MESON6			
-		amlogic_gpio_direction_output(pin, 0, GPIO_OWNER_WIFILED);
-#else
-		amlogic_disable_pullup(pin, GPIO_OWNER_ETHLED);
-#endif		
-	}
-#endif
+	if (wifiLedGpio > 0)
+		gpio_direction_output(wifiLedGpio, brightness > 0 ? 1 : 0);
 }
 
 static enum led_brightness wetekplay_wifiled_get(struct led_classdev *cdev)
 {
-#if 0
-	int pin;
-#ifdef CONFIG_ARCH_MESON6
-	pin = GPIOC_8;
-#else
-	pin = GPIOAO_10;
-#endif	
-	if (amlogic_get_value(pin, GPIO_OWNER_WIFILED))
+	if (gpio_get_value(wifiLedGpio))
 	    return 255;
 	else
-#endif
 	    return 0;
 }
 
 static void wetekplay_ethled_set(struct led_classdev *cdev,
 			  enum led_brightness brightness)
 {
-#if 0
-	int pin;
-#ifdef CONFIG_ARCH_MESON6
-	pin = GPIOC_14;
-#else
-	pin = GPIOAO_11;
-#endif	
-	if (brightness) {
-		//printk(KERN_INFO "%s() LED BLUE\n", __FUNCTION__);
-#ifdef CONFIG_ARCH_MESON6		
-		amlogic_gpio_direction_output(pin, 1, GPIO_OWNER_ETHLED);
-#else
-		amlogic_set_pull_up_down(pin, 1, GPIO_OWNER_ETHLED);
-#endif		
-	}
-	else {
-		//printk(KERN_INFO "%s() LED OFF\n", __FUNCTION__);
-#ifdef CONFIG_ARCH_MESON6			
-		amlogic_gpio_direction_output(pin, 0, GPIO_OWNER_ETHLED);
-#else
-		amlogic_disable_pullup(pin, GPIO_OWNER_ETHLED);
-#endif		
-	}
-#endif
+	if (ethLedGpio > 0)
+		gpio_direction_output(ethLedGpio, brightness > 0 ? 1 : 0);
 }
 
 static enum led_brightness wetekplay_ethled_get(struct led_classdev *cdev)
 {
-#if 0
-	int pin;
-#ifdef CONFIG_ARCH_MESON6
-	pin = GPIOC_14;
-#else
-	pin = GPIOAO_11;
-#endif
-	if (amlogic_get_value(pin, GPIO_OWNER_ETHLED))
+	if (gpio_get_value(ethLedGpio))
 	    return 255;
 	else
-#endif
 	    return 0;
 }
 
@@ -162,17 +95,40 @@ static struct led_classdev wetekplay_ethled = {
 
 static int wetekplay_led_probe(struct platform_device *pdev)
 {
-#if 0
-#ifdef CONFIG_ARCH_MESON6
-	amlogic_gpio_request(GPIOC_8, GPIO_OWNER_WIFILED);
-	amlogic_gpio_request(GPIOC_14, GPIO_OWNER_ETHLED);
-#else
-	amlogic_gpio_request(GPIOAO_10, GPIO_OWNER_WIFILED);
-	amlogic_gpio_direction_input(GPIOAO_10, GPIO_OWNER_WIFILED);
-	amlogic_gpio_request(GPIOAO_11, GPIO_OWNER_ETHLED);
-	amlogic_gpio_direction_input(GPIOAO_11, GPIO_OWNER_ETHLED);
-#endif
-#endif
+	int ret;
+	const char *str;
+	struct gpio_desc *desc;
+	
+	ret = of_property_read_string(pdev->dev.of_node,
+		"eth_led", &str);
+	if (!ret) {
+		desc = of_get_named_gpiod_flags(pdev->dev.of_node,
+			"eth_led", 0, NULL);
+		ethLedGpio = desc_to_gpio(desc);
+		gpio_request(ethLedGpio, GPIO_OWNER_ETHLED);
+	}
+	
+	ret = of_property_read_string(pdev->dev.of_node,
+		"wifi_led", &str);
+	if (!ret) {						
+		desc = of_get_named_gpiod_flags(pdev->dev.of_node,
+			"wifi_led", 0, NULL);
+		wifiLedGpio = desc_to_gpio(desc);
+		gpio_request(wifiLedGpio, GPIO_OWNER_WIFILED);
+	}
+	ret = of_property_read_string(pdev->dev.of_node,
+		"pwr_led", &str);
+	if (!ret) {						
+		desc = of_get_named_gpiod_flags(pdev->dev.of_node,
+			"pwr_led", 0, NULL);
+		pwrLedGpio = desc_to_gpio(desc);
+		gpio_request(pwrLedGpio, GPIO_OWNER_PWRLED);
+	}
+
+	if (wifiLedGpio > 0)
+		gpio_direction_output(wifiLedGpio, 0);
+	if (ethLedGpio > 0)
+		gpio_direction_output(ethLedGpio, 0);
 	led_classdev_register(&pdev->dev, &wetekplay_powerled);
 	led_classdev_register(&pdev->dev, &wetekplay_wifiled);
 	return led_classdev_register(&pdev->dev, &wetekplay_ethled);
@@ -180,15 +136,7 @@ static int wetekplay_led_probe(struct platform_device *pdev)
 
 static int wetekplay_led_remove(struct platform_device *pdev)
 {
-#if 0
-#ifdef CONFIG_ARCH_MESON6
-	amlogic_gpio_free(GPIOC_8, GPIO_OWNER_WIFILED);
-	amlogic_gpio_free(GPIOC_14, GPIO_OWNER_ETHLED);
-#else
-	amlogic_gpio_free(GPIOAO_10, GPIO_OWNER_WIFILED);
-	amlogic_gpio_free(GPIOAO_11, GPIO_OWNER_ETHLED);
-#endif
-#endif
+
 	led_classdev_unregister(&wetekplay_powerled);
 	led_classdev_unregister(&wetekplay_wifiled);
 	led_classdev_unregister(&wetekplay_ethled);

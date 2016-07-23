@@ -1039,6 +1039,9 @@
 	};*/
 	leds{
 		compatible = "amlogic,wetekplay-led";
+		pwr_led =  <&gpio_ao       GPIOAO_13       GPIO_ACTIVE_HIGH>;
+		wifi_led =  <&gpio       GPIODV_26       GPIO_ACTIVE_LOW>;	
+		eth_led =  <&gpio       GPIODV_27       GPIO_ACTIVE_LOW>;		
 		powerled{
 		label = "wetek:blue:powerled";
 		};
